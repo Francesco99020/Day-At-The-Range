@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
@@ -155,19 +154,18 @@ public class GameManager : MonoBehaviour
     public void ReadStringInput(string input)
     {
         userInput = input;
-        MainManager.instance.playerName = userInput;
         SetGreedingText();
     }
 
     private void SetGreedingText()
     {
-        if(MainManager.instance.playerName == "" || userInput == "")
+        if(userInput == "")
         {
             NameDisplay.gameObject.SetActive(false);
         }
         else
         {
-            NameDisplay.text = "Hello " + MainManager.instance.playerName;
+            NameDisplay.text = "Hello " + userInput;
             NameDisplay.gameObject.SetActive(true);
             nameSelected = true;
         }

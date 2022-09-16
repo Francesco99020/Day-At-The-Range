@@ -1,11 +1,10 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ProjectileManager : MonoBehaviour
 {
     public GameObject projectile;
-    public GameObject camera;
+    public new GameObject camera;
     [SerializeField] AudioClip shoot;
     [SerializeField] AudioClip reload;
     [SerializeField] AudioSource playerAudioSource;

@@ -1,49 +1,35 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-public class Target2Logic : MonoBehaviour
+public class TargetLogic : MonoBehaviour
 {
     int randomStartRange = 3;
     int randomEndRange = 6;
+    Vector3 endPosForReset;
+    bool reset = false;
     [SerializeField] AudioSource targetAudioSource;
     [SerializeField] AudioClip targetHitSound;
 
-    //To reset position when target is hit
-    Vector3 endPosForReset;
-    bool reset = false;
-
     //To change target position
-    Vector3[] positionArray = new[] {
-        new Vector3(8.028f, 0.8f, 2.5f), new Vector3(8.028f, 0.8f, -1f),
-        new Vector3(8.028f, 0.8f, -4.2f), new Vector3(8.028f, 0.8f, -7.7f), 
-        new Vector3(8.028f, 0.8f, -11.19f), new Vector3(8.028f, 0.8f, -14.85f),
-        new Vector3(8.028f, 0.8f, -18.60f), new Vector3(8.028f, 0.8f, -22.7f)
-    };
+    Vector3[] positionArray;
 
     //for coroutines
-    bool isCoroutine2Working;
+    bool isCoroutineWorking;
 
     //To smoothly move targets
+    Vector3 startMove;
+    Vector3 endMove;
     Vector3 endPoint;
     Vector3 startPoint;
     float durationOfTransition = 2f;
     float elapsedTime;
     bool preformingSmoothTransition;
 
-    // Start is called before the first frame update
-    void Start()
+    protected void SmoothTransition()
     {
-        preformingSmoothTransition = false;
-        targetAudioSource = GetComponent<AudioSource>();
-        StartCoroutine(Target2Controller());
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        StartCoroutine(Target2Controller());
-
         if (preformingSmoothTransition)
         {
             elapsedTime += Time.deltaTime;
@@ -58,36 +44,36 @@ public class Target2Logic : MonoBehaviour
         }
     }
 
-    IEnumerator Target2Controller()
+    protected IEnumerator TargetController()
     {
-        if (isCoroutine2Working || preformingSmoothTransition)
+        if (isCoroutineWorking || preformingSmoothTransition)
         {
             yield break;
         }
 
-        isCoroutine2Working = true;
+        isCoroutineWorking = true;
         yield return new WaitForSeconds(Random.Range(randomStartRange, randomEndRange));
-        moveTarget(new Vector3(0, 1.25f, 0), true);
+        moveTarget(startMove, true);
         yield return new WaitForSeconds(Random.Range(randomStartRange, randomEndRange));
-        moveTarget(new Vector3(0, -1.25f, 0), false);
+        moveTarget(endMove, false);
         yield return new WaitForSeconds(Random.Range(randomStartRange, randomEndRange));
         ChangePosition();
 
-        isCoroutine2Working = false;
-        StartCoroutine(Target2Controller());
+        isCoroutineWorking = false;
+        StartCoroutine(TargetController());
     }
 
-    IEnumerator DelayTarget2Controller()
+    protected IEnumerator DelayTargetController()
     {
         yield return new WaitForSeconds(2);
         durationOfTransition = 2;
         elapsedTime = 0;
         reset = false;
-        isCoroutine2Working = false;
+        isCoroutineWorking = false;
         ChangePosition();
     }
 
-    void moveTarget(Vector3 shift, bool isStartPos)
+    protected void moveTarget(Vector3 shift, bool isStartPos)
     {
         if (isStartPos)
         {
@@ -102,12 +88,19 @@ public class Target2Logic : MonoBehaviour
         }
     }
 
-    void ChangePosition()
+    protected void ChangePosition()
     {
         transform.position = positionArray[Random.Range(0, positionArray.Length)];
     }
 
-    private void OnTriggerEnter(Collider other)
+    protected void SetupTarget()
+    {
+        preformingSmoothTransition = false;
+        targetAudioSource = GetComponent<AudioSource>();
+        StartCoroutine(TargetController());
+    }
+
+    protected void OnTriggerEnter(Collider other)
     {
         StopAllCoroutines();
         targetAudioSource.PlayOneShot(targetHitSound, 1.0f);
@@ -117,6 +110,17 @@ public class Target2Logic : MonoBehaviour
         endPoint = endPosForReset;
         durationOfTransition = 0.2f;
         elapsedTime = 0;
-        StartCoroutine(DelayTarget2Controller());
+        StartCoroutine(DelayTargetController());
+    }
+
+    protected void SetPositionArray(Vector3[] PositionArray)
+    {
+        positionArray = PositionArray;
+    }
+
+    protected void SetMoveDistance(Vector3 start, Vector3 end)
+    {
+        startMove = start;
+        endMove = end;
     }
 }
